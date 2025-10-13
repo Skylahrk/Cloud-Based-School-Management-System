@@ -584,6 +584,7 @@ const AttendanceTab = () => {
   const { user } = useAuth();
   const [attendanceRecords, setAttendanceRecords] = useState([]);
   const [students, setStudents] = useState([]);
+  const [myStudentId, setMyStudentId] = useState(null);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
@@ -594,9 +595,11 @@ const AttendanceTab = () => {
   });
 
   useEffect(() => {
-    fetchStudents();
+    if (user?.role === 'admin' || user?.role === 'teacher') {
+      fetchStudents();
+    }
     fetchAttendance();
-  }, []);
+  }, [user]);
 
   const fetchStudents = async () => {
     try {
@@ -609,8 +612,21 @@ const AttendanceTab = () => {
 
   const fetchAttendance = async () => {
     try {
-      const response = await axios.get(`${API}/attendance`);
-      setAttendanceRecords(response.data);
+      // If student, fetch only their own attendance
+      if (user?.role === 'student') {
+        // First get student record for this user
+        const studentsResponse = await axios.get(`${API}/students`);
+        const studentRecord = studentsResponse.data.find(s => s.user_id === user.id);
+        
+        if (studentRecord) {
+          setMyStudentId(studentRecord.id);
+          const response = await axios.get(`${API}/attendance?student_id=${studentRecord.id}`);
+          setAttendanceRecords(response.data);
+        }
+      } else {
+        const response = await axios.get(`${API}/attendance`);
+        setAttendanceRecords(response.data);
+      }
     } catch (error) {
       toast.error('Failed to fetch attendance');
     }
