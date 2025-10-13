@@ -372,6 +372,14 @@ async def get_dashboard_stats(current_user: dict = Depends(get_current_user)):
             stats["total_attendance"] = await db.attendance.count_documents({"student_id": student["id"]})
             stats["present_days"] = await db.attendance.count_documents({"student_id": student["id"], "status": "present"})
             stats["total_grades"] = await db.grades.count_documents({"student_id": student["id"]})
+    
+    elif current_user["role"] == "parent":
+        # Count children (students with this parent_id)
+        stats["children_count"] = await db.students.count_documents({"parent_id": current_user["id"]})
+        stats["announcements_count"] = await db.announcements.count_documents({
+            "$or": [{"target_role": None}, {"target_role": "parent"}]
+        })
+        stats["events_count"] = 3  # Mock data for upcoming events
             
     return stats
 
