@@ -825,6 +825,7 @@ const GradesTab = () => {
   const { user } = useAuth();
   const [grades, setGrades] = useState([]);
   const [students, setStudents] = useState([]);
+  const [myStudentId, setMyStudentId] = useState(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
     student_id: '',
@@ -838,8 +839,10 @@ const GradesTab = () => {
 
   useEffect(() => {
     fetchGrades();
-    fetchStudents();
-  }, []);
+    if (user?.role === 'admin' || user?.role === 'teacher') {
+      fetchStudents();
+    }
+  }, [user]);
 
   const fetchStudents = async () => {
     try {
@@ -852,8 +855,20 @@ const GradesTab = () => {
 
   const fetchGrades = async () => {
     try {
-      const response = await axios.get(`${API}/grades`);
-      setGrades(response.data);
+      // If student, fetch only their own grades
+      if (user?.role === 'student') {
+        const studentsResponse = await axios.get(`${API}/students`);
+        const studentRecord = studentsResponse.data.find(s => s.user_id === user.id);
+        
+        if (studentRecord) {
+          setMyStudentId(studentRecord.id);
+          const response = await axios.get(`${API}/grades?student_id=${studentRecord.id}`);
+          setGrades(response.data);
+        }
+      } else {
+        const response = await axios.get(`${API}/grades`);
+        setGrades(response.data);
+      }
     } catch (error) {
       toast.error('Failed to fetch grades');
     }
