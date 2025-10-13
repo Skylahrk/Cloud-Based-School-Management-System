@@ -200,6 +200,26 @@ const DashboardLayout = ({ children }) => {
     return colors[role] || 'bg-gray-500';
   };
 
+  // Check if user can access a tab
+  const canAccessTab = (tab) => {
+    const role = user?.role;
+    
+    switch(tab) {
+      case 'overview':
+        return true; // All roles can see overview
+      case 'students':
+        return role === 'admin' || role === 'teacher';
+      case 'attendance':
+        return role === 'admin' || role === 'teacher' || role === 'student';
+      case 'grades':
+        return role === 'admin' || role === 'teacher' || role === 'student';
+      case 'communication':
+        return true; // All roles can see announcements
+      default:
+        return false;
+    }
+  };
+
   return (
     <div className="dashboard-layout">
       <aside className="sidebar">
@@ -220,7 +240,7 @@ const DashboardLayout = ({ children }) => {
             <span>Overview</span>
           </button>
           
-          {(user?.role === 'admin' || user?.role === 'teacher') && (
+          {canAccessTab('students') && (
             <button 
               onClick={() => setActiveTab('students')} 
               className={`nav-item ${activeTab === 'students' ? 'active' : ''}`}
@@ -231,32 +251,38 @@ const DashboardLayout = ({ children }) => {
             </button>
           )}
           
-          <button 
-            onClick={() => setActiveTab('attendance')} 
-            className={`nav-item ${activeTab === 'attendance' ? 'active' : ''}`}
-            data-testid="attendance-nav"
-          >
-            <CalendarIcon className="h-5 w-5" />
-            <span>Attendance</span>
-          </button>
+          {canAccessTab('attendance') && (
+            <button 
+              onClick={() => setActiveTab('attendance')} 
+              className={`nav-item ${activeTab === 'attendance' ? 'active' : ''}`}
+              data-testid="attendance-nav"
+            >
+              <CalendarIcon className="h-5 w-5" />
+              <span>Attendance</span>
+            </button>
+          )}
           
-          <button 
-            onClick={() => setActiveTab('grades')} 
-            className={`nav-item ${activeTab === 'grades' ? 'active' : ''}`}
-            data-testid="grades-nav"
-          >
-            <Award className="h-5 w-5" />
-            <span>Grades</span>
-          </button>
+          {canAccessTab('grades') && (
+            <button 
+              onClick={() => setActiveTab('grades')} 
+              className={`nav-item ${activeTab === 'grades' ? 'active' : ''}`}
+              data-testid="grades-nav"
+            >
+              <Award className="h-5 w-5" />
+              <span>Grades</span>
+            </button>
+          )}
           
-          <button 
-            onClick={() => setActiveTab('communication')} 
-            className={`nav-item ${activeTab === 'communication' ? 'active' : ''}`}
-            data-testid="communication-nav"
-          >
-            <Bell className="h-5 w-5" />
-            <span>Announcements</span>
-          </button>
+          {canAccessTab('communication') && (
+            <button 
+              onClick={() => setActiveTab('communication')} 
+              className={`nav-item ${activeTab === 'communication' ? 'active' : ''}`}
+              data-testid="communication-nav"
+            >
+              <Bell className="h-5 w-5" />
+              <span>Announcements</span>
+            </button>
+          )}
         </nav>
         
         <div className="sidebar-footer">
@@ -293,10 +319,10 @@ const DashboardLayout = ({ children }) => {
         
         <div className="dashboard-content">
           {activeTab === 'overview' && <OverviewTab />}
-          {activeTab === 'students' && <StudentsTab />}
-          {activeTab === 'attendance' && <AttendanceTab />}
-          {activeTab === 'grades' && <GradesTab />}
-          {activeTab === 'communication' && <CommunicationTab />}
+          {activeTab === 'students' && canAccessTab('students') && <StudentsTab />}
+          {activeTab === 'attendance' && canAccessTab('attendance') && <AttendanceTab />}
+          {activeTab === 'grades' && canAccessTab('grades') && <GradesTab />}
+          {activeTab === 'communication' && canAccessTab('communication') && <CommunicationTab />}
         </div>
       </main>
     </div>
