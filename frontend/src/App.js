@@ -370,6 +370,12 @@ const OverviewTab = () => {
         { title: 'Present Days', value: stats.present_days || 0, icon: CheckCircle2, color: 'from-emerald-500 to-teal-500' },
         { title: 'Total Grades', value: stats.total_grades || 0, icon: Award, color: 'from-violet-500 to-fuchsia-500' },
       ];
+    } else if (user.role === 'parent') {
+      return [
+        { title: 'Children Enrolled', value: stats.children_count || 0, icon: Users, color: 'from-blue-500 to-cyan-500' },
+        { title: 'Announcements', value: stats.announcements_count || 0, icon: Bell, color: 'from-rose-500 to-orange-500' },
+        { title: 'Upcoming Events', value: stats.events_count || 0, icon: CalendarIcon, color: 'from-violet-500 to-fuchsia-500' },
+      ];
     }
     return [];
   };
